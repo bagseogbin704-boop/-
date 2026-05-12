@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Taycan Turbo GT Dashboard</title>
+    <style>
+        :root {
+            --porsche-blue: #00e5ff;
+            --gt-red: #ff3d00;
+            --bg-dark: #020202;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            letter-spacing: -1px;
+        }
+
+        /* 중앙 원형 게이지 */
+        .gauge-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        svg {
+            position: absolute;
+            transform: rotate(-90deg);
+        }
+
+        .base-circle {
+            fill: none;
+            stroke: #1a1a1a;
+            stroke-width: 8;
+        }
+
+        .progress-circle {
+            fill: none;
+            stroke: var(--porsche-blue);
+            stroke-width: 8;
+            stroke-dasharray: 880;
+            stroke-dashoffset: 880; /* 속도에 따라 변화 */
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease-out;
+            filter: drop-shadow(0 0 8px var(--porsche-blue));
+        }
+
+        /* 속도 텍스트 레이아웃 */
+        .speed-content {
+            text-align: center;
+            z-index: 10;
+        }
+
+        #speed {
+            font-size: 110px;
+            font-weight: 800;
+            margin: 0;
+            line-height: 1;
+            font-style: italic;
+        }
+
+        .unit {
+            font-size: 18px;
+            color: #666;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* 하단 터보 GT 로고 및 정보 */
+        .gt-footer {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .model-name {
+            font-size: 14px;
+            letter-spacing: 4px;
+            color: var(--gt-red);
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .val { color: white; font-weight: bold; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="gauge-container">
+    <svg width="300" height="300">
+        <circle class="base-circle" cx="150" cy="150" r="140"></circle>
+        <circle id="progress" class="progress-circle" cx="150" cy="150" r="140"></circle>
+    </svg>
+    
+    <div class="speed-content">
+        <p id="speed">0</p>
+        <span class="unit">km/h</span>
+    </div>
+</div>
+
+<div class="gt-footer">
+    <div class="model-name">TURBO GT</div>
+    <div class="stats">
+        <div><small>ACCURACY</small><br><span id="acc" class="val">0</span><small>m</small></div>
+        <div><small>TOP SPEED</small><br><span id="top" class="val">0</span><small>km/h</small></div>
+    </div>
+</div>
+
+<script>
+    const speedEl = document.getElementById('speed');
+    const progressEl = document.getElementById('progress');
+    const accEl = document.getElementById('acc');
+    const topEl = document.getElementById('top');
+
+    let maxSpeedFound = 0;
+    const CIRCUMFERENCE = 2 * Math.PI * 140; // 원 둘레
+
+    function updateDashboard(pos) {
+        let speedMps = pos.coords.speed || 0;
+        if (speedMps < 0) speedMps = 0;
+        
+        const kmh = Math.round(speedMps * 3.6);
+        speedEl.innerText = kmh;
+
+        // 최고 속도 업데이트
+        if (kmh > maxSpeedFound) {
+            maxSpeedFound = kmh;
+            topEl.innerText = maxSpeedFound;
+        }
+
+        // 게이지 업데이트 (자전거 기준 최고속도 50km/h로 상정)
+        const limit = 50;
+        const percent = Math.min(kmh / limit, 1);
+        progressEl.style.strokeDashoffset = CIRCUMFERENCE - (percent * CIRCUMFERENCE);
+
+        // 정확도
+        accEl.innerText = Math.round(pos.coords.accuracy);
+    }
+
+    if ("geolocation" in navigator) {
+        navigator.geolocation.watchPosition(updateDashboard, (err) => console.log(err), {
+            enableHighAccuracy: true
+        });
+    }
+</script>
+
+</body>
+</html>
