@@ -3,209 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Perfect Taycan 3-Dial Cluster</title>
+    <title>Taycan Ultimate Sync</title>
     <style>
-        /* Porsche의 세련된 다크 테마 */
         :root {
-            --cyan-glow: #00e5ff;
-            --green-battery: #00ff00;
-            --grey-text: #666;
-            --bg-dark: #020202;
+            --cyan: #00e5ff;
+            --bg: #000;
+            --panel-bg: rgba(20, 20, 20, 0.8);
         }
 
         body {
             margin: 0;
-            background-color: var(--bg-dark);
+            background-color: var(--bg);
             color: white;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            letter-spacing: -1px;
         }
 
-        /* 3구 클러스터 메인 컨테이너 */
-        .cluster-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
+        .cluster {
             display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            width: 100vw;
+            height: 100vh;
+            align-items: center;
+            padding: 0 20px;
+            box-sizing: border-box;
+            background: radial-gradient(circle at center, #151515 0%, #000 100%);
+        }
+
+        /* 공통 원형 다이얼 스타일 */
+        .dial {
+            position: relative;
+            aspect-ratio: 1/1;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
             padding: 20px;
-            box-sizing: border-box;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
         }
 
         /* 중앙 속도계 */
-        .center-dial {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 320px;
-            height: 320px;
-            z-index: 10;
-        }
+        .center-dial { border: 2px solid rgba(255,255,255,0.2); }
+        #speed { font-size: 120px; font-weight: 800; font-style: italic; margin: 0; line-height: 1; }
+        .unit { color: #666; font-size: 18px; margin-top: 10px; font-weight: bold; }
 
-        .center-dial::after {
-            content: '';
-            position: absolute;
-            width: 310px;
-            height: 310px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #222 0%, #050505 70%);
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.05);
-            z-index: 5;
-        }
+        /* 정보 텍스트 스타일 */
+        .info-label { color: var(--cyan); font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .info-value { font-size: 20px; font-weight: bold; margin-bottom: 15px; }
+        .sub-text { color: #888; font-size: 12px; }
 
-        .speed-content {
-            text-align: center;
-            z-index: 15;
-            color: white;
-        }
+        /* 배터리 바 */
+        .bat-container { width: 80px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        #bat-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #0f0, #00ff00); transition: width 0.5s; }
 
-        #speed {
-            font-size: 130px;
-            font-weight: 800;
-            margin: 0;
-            line-height: 0.8;
-            font-style: italic;
-            letter-spacing: -5px;
-        }
+        /* 음악 정보 섹션 */
+        .music-box { text-align: right; width: 100%; }
+        #music-title { font-size: 16px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        #music-artist { font-size: 13px; color: #888; }
 
-        .unit {
-            font-size: 18px;
-            color: #666;
-            display: block;
-            margin-top: 5px;
-            letter-spacing: 2px;
-        }
-
-        /* 양옆 정보창 공통 스타일 */
-        .side-dial {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            padding: 40px;
-            box-sizing: border-box;
-            color: #888;
-            font-size: 12px;
-        }
-
-        .left-dial { align-items: flex-start; text-align: left; }
-        .right-dial { align-items: flex-end; text-align: right; }
-
-        /* 정보창 디테일 구현 */
-        .data-panel { margin-top: auto; }
-        .val { color: white; font-weight: bold; font-size: 16px; }
-        .label { color: var(--cyan-glow); font-weight: bold; font-size: 10px; }
-
-        /* 좌측 배터리 및 온도 */
-        .temp { font-size: 18px; color: white; margin-bottom: 30px; }
-        .battery-soc { font-size: 16px; color: var(--cyan-glow); }
-        .battery-bar-container {
-            width: 100px;
-            height: 12px;
-            background: #222;
-            border-radius: 6px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        .battery-bar {
-            width: 33%; /* 사진과 동일 */
-            height: 100%;
-            background: linear-gradient(90deg, #0f0, #00ff00);
-            border-radius: 6px;
-        }
-
-        /* 우측 미디어 정보 복제 및 GPS 데이터 통합 */
-        .song-info { margin-top: auto; color: white; }
-        .song-title { font-size: 14px; font-weight: bold; line-height: 1.2; }
-        .integrated-gps-data {
-            margin-top: 30px;
-            display: grid;
-            grid-template-columns: auto auto;
-            gap: 15px;
-            color: #ccc;
-        }
-
-        /* 하단 최고 속도 */
-        .gt-footer {
-            position: absolute;
-            bottom: 40px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-        }
+        #current-time { position: absolute; top: 10%; right: 10%; font-size: 24px; font-weight: 300; }
     </style>
 </head>
 <body>
 
-    <div class="cluster-container">
-        
-        <div class="side-dial left-dial">
-            <div class="temp">18 <span style="color:#666;">°C</span></div>
-            <div class="data-panel">
-                <div class="battery-soc">33 %</div>
-                <div class="battery-bar-container">
-                    <div class="battery-bar"></div>
-                </div>
-                <div>최고 속도 <br><span id="top-speed" class="val">0</span> km/h</div>
+    <div id="current-time">00:00 PM</div>
+
+    <div class="cluster">
+        <div class="dial">
+            <div class="info-label">Battery</div>
+            <div id="bat-text" class="info-value">--%</div>
+            <div class="bat-container"><div id="bat-fill"></div></div>
+            <div style="margin-top: 20px;">
+                <div class="info-label">Top Speed</div>
+                <div id="top-speed" class="info-value">0</div>
             </div>
         </div>
 
-        <div class="center-dial">
-            <div class="speed-content">
-                <p id="speed">0</p>
-                <span class="unit">KM/H</span>
-            </div>
+        <div class="dial center-dial">
+            <div class="sub-text">SET ---</div>
+            <div id="speed">0</div>
+            <div class="unit">km/h</div>
+            <div class="sub-text" style="margin-top: 20px;">● 165 km</div>
         </div>
 
-        <div class="side-dial right-dial">
-            <div class="temp">3:13 PM</div>
-            <div class="song-info">
-                <div class="song-title">생명의 기억 (いのちの)</div>
-                <div style="font-size:12px;">윤소라</div>
+        <div class="dial">
+            <div class="music-box">
+                <div class="info-label">Now Playing</div>
+                <div id="music-title">No Media</div>
+                <div id="music-artist">Waiting for playback...</div>
             </div>
-            <div class="integrated-gps-data">
-                <div class="label">DISTANCE</div>
-                <div class="label">ACCURACY</div>
-                <div id="distance" class="val">0.0<small>km</small></div>
-                <div id="accuracy" class="val">0<small>m</small></div>
+            <div style="margin-top: 40px; text-align: right; width: 100%;">
+                <div class="info-label">Distance</div>
+                <div id="dist" class="info-value">0.0 km</div>
+                <div class="info-label">Accuracy</div>
+                <div id="acc" class="info-value">-- m</div>
             </div>
-            <div class="label" style="margin-top:auto;">NORMAL</div>
         </div>
-
     </div>
 
     <script>
-        const speedEl = document.getElementById('speed');
-        const distEl = document.getElementById('distance');
-        const accEl = document.getElementById('accuracy');
-        const topSpeedEl = document.getElementById('top-speed');
+        // 1. 시계 업데이트 루프
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            document.getElementById('current-time').innerText = `${hours}:${minutes} ${ampm}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-        let maxS = 0;
+        // 2. 음악 정보 가져오기 (Media Session API)
+        if ('mediaSession' in navigator) {
+            setInterval(() => {
+                const metadata = navigator.mediaSession.metadata;
+                if (metadata) {
+                    document.getElementById('music-title').innerText = metadata.title;
+                    document.getElementById('music-artist').innerText = metadata.artist;
+                }
+            }, 1000);
+        }
+
+        // 3. 실제 배터리 정보 연동
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(battery => {
+                function updateBat() {
+                    const level = Math.round(battery.level * 100);
+                    document.getElementById('bat-text').innerText = level + "%";
+                    document.getElementById('bat-fill').style.width = level + "%";
+                }
+                updateBat();
+                battery.addEventListener('levelchange', updateBat);
+            });
+        }
+
+        // 4. GPS 속도 및 거리
+        let totalDist = 0;
         let lastPos = null;
-        let totalD = 0;
+        let topSpeed = 0;
 
-        function update(pos) {
-            let s = pos.coords.speed || 0;
-            if (s < 0) s = 0;
-            const kmh = Math.round(s * 3.6);
-            
-            // 속도 업데이트
-            speedEl.innerText = kmh;
+        function updateGPS(pos) {
+            const s = Math.round((pos.coords.speed || 0) * 3.6);
+            document.getElementById('speed').innerText = s;
+            document.getElementById('acc').innerText = Math.round(pos.coords.accuracy) + " m";
 
-            // 거리 계산
+            if (s > topSpeed) {
+                topSpeed = s;
+                document.getElementById('top-speed').innerText = topSpeed;
+            }
+
             if (lastPos) {
-                totalD += calculateDistance(lastPos.coords, pos.coords);
-                distEl.innerText = (totalD / 1000).toFixed(1);
+                const d = calculateDistance(lastPos.coords.latitude, lastPos.coords.longitude, 
+                                          pos.coords.latitude, pos.coords.longitude);
+                totalDist += d;
+                document.getElementById('dist').innerText = (totalDist / 1000).toFixed(1) + " km";
             }
             lastPos = pos;
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3;
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lon2-lon1) * Math.PI/180
