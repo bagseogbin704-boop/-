@@ -3,174 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Taycan Ultimate Sync</title>
+    <title>Taycan Real-Sync Cluster</title>
     <style>
         :root {
-            --cyan: #00e5ff;
-            --bg: #000;
-            --panel-bg: rgba(20, 20, 20, 0.8);
+            --porsche-cyan: #00e5ff;
+            --porsche-green: #00ff00;
+            --bg-gradient: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
         }
 
         body {
             margin: 0;
-            background-color: var(--bg);
+            background-color: #000;
+            background: var(--bg-gradient);
             color: white;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             overflow: hidden;
         }
 
-        .cluster {
+        .container {
             display: grid;
             grid-template-columns: 1fr 1.2fr 1fr;
-            width: 100vw;
-            height: 100vh;
+            width: 95vw;
+            height: 80vh;
             align-items: center;
-            padding: 0 20px;
-            box-sizing: border-box;
-            background: radial-gradient(circle at center, #151515 0%, #000 100%);
+            text-align: center;
         }
 
-        /* 공통 원형 다이얼 스타일 */
-        .dial {
+        /* 중앙 속도계 */
+        .center-dial {
             position: relative;
-            aspect-ratio: 1/1;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.1);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
         }
 
-        /* 중앙 속도계 */
-        .center-dial { border: 2px solid rgba(255,255,255,0.2); }
-        #speed { font-size: 120px; font-weight: 800; font-style: italic; margin: 0; line-height: 1; }
-        .unit { color: #666; font-size: 18px; margin-top: 10px; font-weight: bold; }
+        .gauge-ring {
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.05);
+        }
 
-        /* 정보 텍스트 스타일 */
-        .info-label { color: var(--cyan); font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
-        .info-value { font-size: 20px; font-weight: bold; margin-bottom: 15px; }
-        .sub-text { color: #888; font-size: 12px; }
+        #speed { font-size: 140px; font-weight: 800; font-style: italic; margin: 0; line-height: 1; }
+        .unit { font-size: 18px; color: #666; font-weight: bold; margin-top: 10px; }
 
-        /* 배터리 바 */
-        .bat-container { width: 80px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; margin: 10px 0; }
-        #bat-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #0f0, #00ff00); transition: width 0.5s; }
+        /* 좌측 패널 (배터리 & 온도) */
+        .side-panel { display: flex; flex-direction: column; height: 100%; justify-content: space-around; padding: 20px; }
+        .left { text-align: left; }
+        .right { text-align: right; }
 
-        /* 음악 정보 섹션 */
-        .music-box { text-align: right; width: 100%; }
-        #music-title { font-size: 16px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
-        #music-artist { font-size: 13px; color: #888; }
+        .temp { font-size: 24px; color: #fff; }
+        .battery-val { font-size: 20px; color: var(--porsche-cyan); font-weight: bold; }
+        .bar-bg { width: 120px; height: 8px; background: #333; border-radius: 4px; margin: 8px 0; }
+        #bar-fill { height: 100%; background: var(--porsche-green); border-radius: 4px; transition: width 0.5s; }
 
-        #current-time { position: absolute; top: 10%; right: 10%; font-size: 24px; font-weight: 300; }
+        /* 우측 패널 (시계 & 음악) */
+        .clock { font-size: 24px; margin-bottom: 50px; }
+        .music-title { font-size: 18px; font-weight: bold; color: var(--porsche-cyan); margin-bottom: 5px; }
+        .music-artist { font-size: 14px; color: #888; }
+
+        /* GPS 데이터 하단 배치 */
+        .gps-info { margin-top: 30px; font-size: 12px; color: #444; text-transform: uppercase; }
+        .gps-val { font-size: 18px; color: #ccc; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="current-time">00:00 PM</div>
-
-    <div class="cluster">
-        <div class="dial">
-            <div class="info-label">Battery</div>
-            <div id="bat-text" class="info-value">--%</div>
-            <div class="bat-container"><div id="bat-fill"></div></div>
-            <div style="margin-top: 20px;">
-                <div class="info-label">Top Speed</div>
-                <div id="top-speed" class="info-value">0</div>
+    <div class="container">
+        <div class="side-panel left">
+            <div class="temp">18 <span style="color:#666">°C</span></div>
+            <div>
+                <div id="bat-level" class="battery-val">-- %</div>
+                <div class="bar-bg"><div id="bar-fill" style="width: 0%"></div></div>
+                <div class="gps-info">TOP SPEED</div>
+                <div id="top-speed" class="gps-val">0 <small>km/h</small></div>
             </div>
         </div>
 
-        <div class="dial center-dial">
-            <div class="sub-text">SET ---</div>
+        <div class="center-dial">
+            <div class="gauge-ring"></div>
+            <div style="font-size: 12px; color: #444; margin-bottom: 10px;">SET ---</div>
             <div id="speed">0</div>
-            <div class="unit">km/h</div>
-            <div class="sub-text" style="margin-top: 20px;">● 165 km</div>
+            <div class="unit">KM/H</div>
+            <div style="font-size: 12px; color: #666; margin-top: 20px;">● 165 km</div>
         </div>
 
-        <div class="dial">
-            <div class="music-box">
-                <div class="info-label">Now Playing</div>
-                <div id="music-title">No Media</div>
-                <div id="music-artist">Waiting for playback...</div>
-            </div>
-            <div style="margin-top: 40px; text-align: right; width: 100%;">
-                <div class="info-label">Distance</div>
-                <div id="dist" class="info-value">0.0 km</div>
-                <div class="info-label">Accuracy</div>
-                <div id="acc" class="info-value">-- m</div>
+        <div class="side-panel right">
+            <div id="time" class="clock">00:00 PM</div>
+            <div>
+                <div id="m-title" class="music-title">No Media</div>
+                <div id="m-artist" class="music-artist">Waiting for sync...</div>
+                <div style="display: flex; gap: 20px; justify-content: flex-end; margin-top: 30px;">
+                    <div><div class="gps-info">DISTANCE</div><div id="dist" class="gps-val">0.0<small>km</small></div></div>
+                    <div><div class="gps-info">ACCURACY</div><div id="acc" class="gps-val">0<small>m</small></div></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. 시계 업데이트 루프
-        function updateClock() {
+        // 1. 실시간 시계 업데이트
+        function updateTime() {
             const now = new Date();
-            let hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12;
-            document.getElementById('current-time').innerText = `${hours}:${minutes} ${ampm}`;
+            let h = now.getHours();
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            document.getElementById('time').innerText = `${h}:${m} ${ampm}`;
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        setInterval(updateTime, 1000); updateTime();
 
-        // 2. 음악 정보 가져오기 (Media Session API)
+        // 2. 실제 배터리 잔량 연동
+        if('getBattery' in navigator) {
+            navigator.getBattery().then(bat => {
+                const updateBat = () => {
+                    const lv = Math.round(bat.level * 100);
+                    document.getElementById('bat-level').innerText = lv + " %";
+                    document.getElementById('bar-fill').style.width = lv + "%";
+                };
+                updateBat();
+                bat.addEventListener('levelchange', updateBat);
+            });
+        }
+
+        // 3. 음악 정보 동기화 (MediaSession)
         if ('mediaSession' in navigator) {
             setInterval(() => {
-                const metadata = navigator.mediaSession.metadata;
-                if (metadata) {
-                    document.getElementById('music-title').innerText = metadata.title;
-                    document.getElementById('music-artist').innerText = metadata.artist;
+                if (navigator.mediaSession.metadata) {
+                    document.getElementById('m-title').innerText = navigator.mediaSession.metadata.title;
+                    document.getElementById('m-artist').innerText = navigator.mediaSession.metadata.artist;
                 }
             }, 1000);
         }
 
-        // 3. 실제 배터리 정보 연동
-        if ('getBattery' in navigator) {
-            navigator.getBattery().then(battery => {
-                function updateBat() {
-                    const level = Math.round(battery.level * 100);
-                    document.getElementById('bat-text').innerText = level + "%";
-                    document.getElementById('bat-fill').style.width = level + "%";
-                }
-                updateBat();
-                battery.addEventListener('levelchange', updateBat);
-            });
-        }
-
-        // 4. GPS 속도 및 거리
-        let totalDist = 0;
-        let lastPos = null;
-        let topSpeed = 0;
-
-        function updateGPS(pos) {
-            const s = Math.round((pos.coords.speed || 0) * 3.6);
+        // 4. GPS 속도 및 주행 데이터
+        let totalD = 0, lastP = null, topS = 0;
+        navigator.geolocation.watchPosition(p => {
+            const s = Math.round((p.coords.speed || 0) * 3.6);
             document.getElementById('speed').innerText = s;
-            document.getElementById('acc').innerText = Math.round(pos.coords.accuracy) + " m";
-
-            if (s > topSpeed) {
-                topSpeed = s;
-                document.getElementById('top-speed').innerText = topSpeed;
+            document.getElementById('acc').innerText = Math.round(p.coords.accuracy) + "m";
+            if(s > topS) { topS = s; document.getElementById('top-speed').innerText = topS; }
+            if(lastP) {
+                const d = calcDist(lastP.coords, p.coords);
+                totalD += d;
+                document.getElementById('dist').innerText = (totalD/1000).toFixed(1) + "km";
             }
+            lastP = p;
+        }, null, {enableHighAccuracy: true});
 
-            if (lastPos) {
-                const d = calculateDistance(lastPos.coords.latitude, lastPos.coords.longitude, 
-                                          pos.coords.latitude, pos.coords.longitude);
-                totalDist += d;
-                document.getElementById('dist').innerText = (totalDist / 1000).toFixed(1) + " km";
-            }
-            lastPos = pos;
+        function calcDist(c1, c2) {
+            const R = 6371e3, p1 = c1.latitude * Math.PI/180, p2 = c2.latitude * Math.PI/180;
+            const dp = (c2.latitude-c1.latitude) * Math.PI/180, dl = (c2.longitude-c1.longitude) * Math.PI/180;
+            const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+            return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3;
-            const φ1 = lat1 * Math.PI/180;
-            const φ2 = lat2 * Math.PI/180;
-            const Δφ = (lat2-lat1) * Math.PI/180;
-            const Δλ = (lon2-lon1) * Math.PI/180
+    </script>
+</body>
+</html>
