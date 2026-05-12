@@ -3,65 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Taycan Turbo GT Mode</title>
+    <title>Perfect Taycan 3-Dial Cluster</title>
     <style>
-        @font-face {
-            font-family: 'PorscheNext';
-            src: url('https://fonts.cdnfonts.com/css/porsche-next-tt');
+        /* Porsche의 세련된 다크 테마 */
+        :root {
+            --cyan-glow: #00e5ff;
+            --green-battery: #00ff00;
+            --grey-text: #666;
+            --bg-dark: #020202;
         }
 
         body {
             margin: 0;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-            color: #fff;
-            font-family: 'Arial Black', sans-serif; /* 강한 서킷 느낌 */
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Arial', sans-serif;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            letter-spacing: -1px;
         }
 
-        /* 터보 GT 특유의 커브드 게이지 */
-        .gauge-box {
+        /* 3구 클러스터 메인 컨테이너 */
+        .cluster-container {
             position: relative;
-            width: 350px;
-            height: 350px;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        /* 중앙 속도계 */
+        .center-dial {
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 320px;
+            height: 320px;
+            z-index: 10;
         }
 
-        svg { transform: rotate(-220deg); } /* 시작점 조절 */
-
-        .bg-bar {
-            fill: none;
-            stroke: #222;
-            stroke-width: 12;
-            stroke-dasharray: 660; /* 원의 일부만 사용 */
-            stroke-linecap: round;
-        }
-
-        .speed-bar {
-            fill: none;
-            stroke: #00e5ff; /* 일렉트릭 블루 */
-            stroke-width: 12;
-            stroke-dasharray: 660;
-            stroke-dashoffset: 660; 
-            stroke-linecap: round;
-            filter: drop-shadow(0 0 12px #00e5ff);
-            transition: stroke-dashoffset 0.2s ease-out;
-        }
-
-        .center-info {
+        .center-dial::after {
+            content: '';
             position: absolute;
+            width: 310px;
+            height: 310px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #222 0%, #050505 70%);
+            box-shadow: inset 0 0 15px rgba(255,255,255,0.05);
+            z-index: 5;
+        }
+
+        .speed-content {
             text-align: center;
+            z-index: 15;
+            color: white;
         }
 
         #speed {
             font-size: 130px;
-            font-weight: 900;
+            font-weight: 800;
             margin: 0;
             line-height: 0.8;
             font-style: italic;
@@ -69,95 +77,135 @@
         }
 
         .unit {
-            font-size: 20px;
-            color: #555;
+            font-size: 18px;
+            color: #666;
+            display: block;
+            margin-top: 5px;
             letter-spacing: 2px;
         }
 
-        /* 하단 레이싱 정보 섹션 */
-        .gt-info {
-            margin-top: -20px;
-            width: 100%;
-            max-width: 300px;
-            border-top: 1px solid #333;
-            padding-top: 20px;
+        /* 양옆 정보창 공통 스타일 */
+        .side-dial {
+            position: relative;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            box-sizing: border-box;
+            color: #888;
+            font-size: 12px;
         }
 
-        .label { font-size: 10px; color: #ff3d00; font-weight: bold; margin-bottom: 4px; }
-        .value { font-size: 18px; font-weight: bold; color: #eee; }
+        .left-dial { align-items: flex-start; text-align: left; }
+        .right-dial { align-items: flex-end; text-align: right; }
 
-        .turbo-gt-logo {
-            margin-top: 40px;
+        /* 정보창 디테일 구현 */
+        .data-panel { margin-top: auto; }
+        .val { color: white; font-weight: bold; font-size: 16px; }
+        .label { color: var(--cyan-glow); font-weight: bold; font-size: 10px; }
+
+        /* 좌측 배터리 및 온도 */
+        .temp { font-size: 18px; color: white; margin-bottom: 30px; }
+        .battery-soc { font-size: 16px; color: var(--cyan-glow); }
+        .battery-bar-container {
+            width: 100px;
+            height: 12px;
+            background: #222;
+            border-radius: 6px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .battery-bar {
+            width: 33%; /* 사진과 동일 */
+            height: 100%;
+            background: linear-gradient(90deg, #0f0, #00ff00);
+            border-radius: 6px;
+        }
+
+        /* 우측 미디어 정보 복제 및 GPS 데이터 통합 */
+        .song-info { margin-top: auto; color: white; }
+        .song-title { font-size: 14px; font-weight: bold; line-height: 1.2; }
+        .integrated-gps-data {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 15px;
+            color: #ccc;
+        }
+
+        /* 하단 최고 속도 */
+        .gt-footer {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
             font-size: 14px;
-            letter-spacing: 8px;
-            color: #fff;
-            opacity: 0.8;
         }
     </style>
 </head>
 <body>
 
-    <div class="gauge-box">
-        <svg width="350" height="350">
-            <circle class="bg-bar" cx="175" cy="175" r="140"></circle>
-            <circle id="progress" class="speed-bar" cx="175" cy="175" r="140"></circle>
-        </svg>
-        <div class="center-info">
-            <p id="speed">0</p>
-            <span class="unit">KM/H</span>
+    <div class="cluster-container">
+        
+        <div class="side-dial left-dial">
+            <div class="temp">18 <span style="color:#666;">°C</span></div>
+            <div class="data-panel">
+                <div class="battery-soc">33 %</div>
+                <div class="battery-bar-container">
+                    <div class="battery-bar"></div>
+                </div>
+                <div>최고 속도 <br><span id="top-speed" class="val">0</span> km/h</div>
+            </div>
         </div>
-    </div>
 
-    <div class="gt-info">
-        <div>
-            <div class="label">TOP SPEED</div>
-            <div id="top-speed" class="value">0</div>
+        <div class="center-dial">
+            <div class="speed-content">
+                <p id="speed">0</p>
+                <span class="unit">KM/H</span>
+            </div>
         </div>
-        <div style="text-align: right;">
-            <div class="label">ACCURACY</div>
-            <div id="accuracy" class="value">0m</div>
-        </div>
-    </div>
 
-    <div class="turbo-gt-logo">TAYCAN TURBO GT</div>
+        <div class="side-dial right-dial">
+            <div class="temp">3:13 PM</div>
+            <div class="song-info">
+                <div class="song-title">생명의 기억 (いのちの)</div>
+                <div style="font-size:12px;">윤소라</div>
+            </div>
+            <div class="integrated-gps-data">
+                <div class="label">DISTANCE</div>
+                <div class="label">ACCURACY</div>
+                <div id="distance" class="val">0.0<small>km</small></div>
+                <div id="accuracy" class="val">0<small>m</small></div>
+            </div>
+            <div class="label" style="margin-top:auto;">NORMAL</div>
+        </div>
+
+    </div>
 
     <script>
         const speedEl = document.getElementById('speed');
-        const progressEl = document.getElementById('progress');
-        const topSpeedEl = document.getElementById('top-speed');
+        const distEl = document.getElementById('distance');
         const accEl = document.getElementById('accuracy');
+        const topSpeedEl = document.getElementById('top-speed');
 
         let maxS = 0;
-        const MAX_LIMIT = 50; // 자전거 기준 50km/h를 풀게이지로 설정
-        const BAR_LENGTH = 660;
+        let lastPos = null;
+        let totalD = 0;
 
         function update(pos) {
             let s = pos.coords.speed || 0;
             if (s < 0) s = 0;
             const kmh = Math.round(s * 3.6);
             
-            // 속도 텍스트
+            // 속도 업데이트
             speedEl.innerText = kmh;
 
-            // 게이지 바 계산
-            const offset = BAR_LENGTH - (Math.min(kmh, MAX_LIMIT) / MAX_LIMIT) * BAR_LENGTH;
-            progressEl.style.strokeDashoffset = offset;
-
-            // 최고 속도 기록
-            if(kmh > maxS) {
-                maxS = kmh;
-                topSpeedEl.innerText = maxS;
+            // 거리 계산
+            if (lastPos) {
+                totalD += calculateDistance(lastPos.coords, pos.coords);
+                distEl.innerText = (totalD / 1000).toFixed(1);
             }
-
-            // 정확도
-            accEl.innerText = Math.round(pos.coords.accuracy) + "m";
-        }
-
-        if ("geolocation" in navigator) {
-            navigator.geolocation.watchPosition(update, null, { enableHighAccuracy: true });
-        }
-    </script>
-</body>
-</html>
+            lastPos = pos;
