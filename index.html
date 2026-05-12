@@ -3,167 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Taycan Turbo GT Dashboard</title>
+    <title>Taycan Turbo GT Mode</title>
     <style>
-        :root {
-            --porsche-blue: #00e5ff;
-            --gt-red: #ff3d00;
-            --bg-dark: #020202;
+        @font-face {
+            font-family: 'PorscheNext';
+            src: url('https://fonts.cdnfonts.com/css/porsche-next-tt');
         }
 
         body {
             margin: 0;
-            background-color: var(--bg-dark);
-            color: white;
-            font-family: 'Arial', sans-serif;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            color: #fff;
+            font-family: 'Arial Black', sans-serif; /* 강한 서킷 느낌 */
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            letter-spacing: -1px;
         }
 
-        /* 중앙 원형 게이지 */
-        .gauge-container {
+        /* 터보 GT 특유의 커브드 게이지 */
+        .gauge-box {
             position: relative;
-            width: 320px;
-            height: 320px;
+            width: 350px;
+            height: 350px;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        svg {
-            position: absolute;
-            transform: rotate(-90deg);
-        }
+        svg { transform: rotate(-220deg); } /* 시작점 조절 */
 
-        .base-circle {
+        .bg-bar {
             fill: none;
-            stroke: #1a1a1a;
-            stroke-width: 8;
-        }
-
-        .progress-circle {
-            fill: none;
-            stroke: var(--porsche-blue);
-            stroke-width: 8;
-            stroke-dasharray: 880;
-            stroke-dashoffset: 880; /* 속도에 따라 변화 */
+            stroke: #222;
+            stroke-width: 12;
+            stroke-dasharray: 660; /* 원의 일부만 사용 */
             stroke-linecap: round;
-            transition: stroke-dashoffset 0.3s ease-out;
-            filter: drop-shadow(0 0 8px var(--porsche-blue));
         }
 
-        /* 속도 텍스트 레이아웃 */
-        .speed-content {
+        .speed-bar {
+            fill: none;
+            stroke: #00e5ff; /* 일렉트릭 블루 */
+            stroke-width: 12;
+            stroke-dasharray: 660;
+            stroke-dashoffset: 660; 
+            stroke-linecap: round;
+            filter: drop-shadow(0 0 12px #00e5ff);
+            transition: stroke-dashoffset 0.2s ease-out;
+        }
+
+        .center-info {
+            position: absolute;
             text-align: center;
-            z-index: 10;
         }
 
         #speed {
-            font-size: 110px;
-            font-weight: 800;
+            font-size: 130px;
+            font-weight: 900;
             margin: 0;
-            line-height: 1;
+            line-height: 0.8;
             font-style: italic;
+            letter-spacing: -5px;
         }
 
         .unit {
-            font-size: 18px;
-            color: #666;
-            font-weight: bold;
-            display: block;
-            margin-top: 5px;
+            font-size: 20px;
+            color: #555;
+            letter-spacing: 2px;
         }
 
-        /* 하단 터보 GT 로고 및 정보 */
-        .gt-footer {
-            position: absolute;
-            bottom: 40px;
+        /* 하단 레이싱 정보 섹션 */
+        .gt-info {
+            margin-top: -20px;
             width: 100%;
-            text-align: center;
-        }
-
-        .model-name {
-            font-size: 14px;
-            letter-spacing: 4px;
-            color: var(--gt-red);
-            font-weight: 900;
-            margin-bottom: 15px;
-        }
-
-        .stats {
+            max-width: 300px;
+            border-top: 1px solid #333;
+            padding-top: 20px;
             display: flex;
-            justify-content: center;
-            gap: 30px;
-            font-size: 12px;
-            color: #888;
+            justify-content: space-between;
         }
 
-        .val { color: white; font-weight: bold; font-size: 16px; }
+        .label { font-size: 10px; color: #ff3d00; font-weight: bold; margin-bottom: 4px; }
+        .value { font-size: 18px; font-weight: bold; color: #eee; }
+
+        .turbo-gt-logo {
+            margin-top: 40px;
+            font-size: 14px;
+            letter-spacing: 8px;
+            color: #fff;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
 
-<div class="gauge-container">
-    <svg width="300" height="300">
-        <circle class="base-circle" cx="150" cy="150" r="140"></circle>
-        <circle id="progress" class="progress-circle" cx="150" cy="150" r="140"></circle>
-    </svg>
-    
-    <div class="speed-content">
-        <p id="speed">0</p>
-        <span class="unit">km/h</span>
+    <div class="gauge-box">
+        <svg width="350" height="350">
+            <circle class="bg-bar" cx="175" cy="175" r="140"></circle>
+            <circle id="progress" class="speed-bar" cx="175" cy="175" r="140"></circle>
+        </svg>
+        <div class="center-info">
+            <p id="speed">0</p>
+            <span class="unit">KM/H</span>
+        </div>
     </div>
-</div>
 
-<div class="gt-footer">
-    <div class="model-name">TURBO GT</div>
-    <div class="stats">
-        <div><small>ACCURACY</small><br><span id="acc" class="val">0</span><small>m</small></div>
-        <div><small>TOP SPEED</small><br><span id="top" class="val">0</span><small>km/h</small></div>
+    <div class="gt-info">
+        <div>
+            <div class="label">TOP SPEED</div>
+            <div id="top-speed" class="value">0</div>
+        </div>
+        <div style="text-align: right;">
+            <div class="label">ACCURACY</div>
+            <div id="accuracy" class="value">0m</div>
+        </div>
     </div>
-</div>
 
-<script>
-    const speedEl = document.getElementById('speed');
-    const progressEl = document.getElementById('progress');
-    const accEl = document.getElementById('acc');
-    const topEl = document.getElementById('top');
+    <div class="turbo-gt-logo">TAYCAN TURBO GT</div>
 
-    let maxSpeedFound = 0;
-    const CIRCUMFERENCE = 2 * Math.PI * 140; // 원 둘레
+    <script>
+        const speedEl = document.getElementById('speed');
+        const progressEl = document.getElementById('progress');
+        const topSpeedEl = document.getElementById('top-speed');
+        const accEl = document.getElementById('accuracy');
 
-    function updateDashboard(pos) {
-        let speedMps = pos.coords.speed || 0;
-        if (speedMps < 0) speedMps = 0;
-        
-        const kmh = Math.round(speedMps * 3.6);
-        speedEl.innerText = kmh;
+        let maxS = 0;
+        const MAX_LIMIT = 50; // 자전거 기준 50km/h를 풀게이지로 설정
+        const BAR_LENGTH = 660;
 
-        // 최고 속도 업데이트
-        if (kmh > maxSpeedFound) {
-            maxSpeedFound = kmh;
-            topEl.innerText = maxSpeedFound;
+        function update(pos) {
+            let s = pos.coords.speed || 0;
+            if (s < 0) s = 0;
+            const kmh = Math.round(s * 3.6);
+            
+            // 속도 텍스트
+            speedEl.innerText = kmh;
+
+            // 게이지 바 계산
+            const offset = BAR_LENGTH - (Math.min(kmh, MAX_LIMIT) / MAX_LIMIT) * BAR_LENGTH;
+            progressEl.style.strokeDashoffset = offset;
+
+            // 최고 속도 기록
+            if(kmh > maxS) {
+                maxS = kmh;
+                topSpeedEl.innerText = maxS;
+            }
+
+            // 정확도
+            accEl.innerText = Math.round(pos.coords.accuracy) + "m";
         }
 
-        // 게이지 업데이트 (자전거 기준 최고속도 50km/h로 상정)
-        const limit = 50;
-        const percent = Math.min(kmh / limit, 1);
-        progressEl.style.strokeDashoffset = CIRCUMFERENCE - (percent * CIRCUMFERENCE);
-
-        // 정확도
-        accEl.innerText = Math.round(pos.coords.accuracy);
-    }
-
-    if ("geolocation" in navigator) {
-        navigator.geolocation.watchPosition(updateDashboard, (err) => console.log(err), {
-            enableHighAccuracy: true
-        });
-    }
-</script>
-
+        if ("geolocation" in navigator) {
+            navigator.geolocation.watchPosition(update, null, { enableHighAccuracy: true });
+        }
+    </script>
 </body>
 </html>
